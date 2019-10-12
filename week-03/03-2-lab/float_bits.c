@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 //                                                                            //
 //  Elicia Au Duong (z5260173)                                                //
-//  float_bits.c                                                                 //   
+//  float_bits.c                                                              //   
 //  -----                                                                     //
 //  Extract the 3 parts of a float using bit operations only                  //
 //                                                                            //
