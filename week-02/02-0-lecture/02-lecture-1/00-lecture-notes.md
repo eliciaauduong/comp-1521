@@ -1,5 +1,5 @@
 # Lecture 1 Notes
-Wednesday September 18, 2019
+Wednesday September 25, 2019
 
 ## Floating point numbers
 Internal structure of floating point values
