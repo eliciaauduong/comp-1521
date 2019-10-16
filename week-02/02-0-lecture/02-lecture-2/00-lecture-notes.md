@@ -1,5 +1,5 @@
 # Lecture 1 Notes
-Wednesday September 26, 2019
+Thursday September 26, 2019
 
 ## Floating Point Numbers
 
