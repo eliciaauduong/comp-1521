@@ -30,7 +30,7 @@ typedef enum register_type {
 //
 //     assert(register_name_map[ra] == "$ra");
 //
-extern const char *register_name_map[];
+extern const char *const register_name_map[];
 
 //
 // You can call these functions from `execute_instruction.c':

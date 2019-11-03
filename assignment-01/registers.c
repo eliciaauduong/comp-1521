@@ -12,7 +12,7 @@
 
 #include "registers.h"
 
-const char *register_name_map[] = {
+const char *const register_name_map[] = {
     [zero] = "$zero", [at] = "$at", [v0] = "$v0", [v1] = "$v1", [a0] = "$a0",
     [a1] = "$a1",     [a2] = "$a2", [a3] = "$a3", [t0] = "$t0", [t1] = "$t1",
     [t2] = "$t2",     [t3] = "$t3", [t4] = "$t4", [t5] = "$t5", [t6] = "$t6",
