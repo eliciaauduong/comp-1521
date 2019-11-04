@@ -1,29 +1,32 @@
-// If you use C library functions add includes here.
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  COMP1521 - Computer Systems Fundamentals                                  //
+//  Elicia AU DUONG - z5260173                                                //
+//  ---                                                                       //
+//  Assignment 1: emu, A MIPS Emulator (PART 2)                               //
+//  execute_instruction.c                                                     //
+//                                                                            //
+//  get register values by calling                                            //
+//      `get_register(register_type register_number)`                         //
+//  change registers by calling                                               //
+//      `set_register(register_type register_number, uint32_t value)`         //
+//  get memory values by calling `get_byte(uint32_t address)`                 //
+//  changes memory by calling `set_byte(uint32_t address, uint8_t value)`     //
+//                                                                            //
+//  updates program_counter to address of next instruction                    //
+//  returns 1 if an exit syscall is executed, 0 otherwise                     //
+//  instructions sorted by opcode patterns                                    //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+#include <stdio.h>
 
 #include "emu.h"
 #include "ram.h"
 #include "registers.h"
 #include "instruction.h"
 
-uint32_t extractNum(char num, uint32_t instruction);
-
-
-/**
- * execute a MIPS instruction
- *
- * This function should:
- *
- * get register values by calling `get_register(register_type register_number)`
- * change registers by calling `set_register(register_type register_number, uint32_t value)`
- *
- * get memory values by `calling get_byte(uint32_t address)`
- * changes memory by `set_byte(uint32_t address, uint8_t value)`
- *
- * updates program_counter to address of next instruction
- *
- * returns 1 if an exit syscall is executed, 0 otherwise
- */
-
+// execute a given MIPS instruction and update the program counter
 int execute_instruction(uint32_t instruction, uint32_t *program_counter) {
     // get the opcodes to differentiate each instruction
     // 111111xxxxxxxxxxxxxxx11111111111
@@ -119,31 +122,7 @@ int execute_instruction(uint32_t instruction, uint32_t *program_counter) {
     } else if (code3 == 0x04010000) { 
         bgezInstr(s, b, program_counter);                // bgez instruction
     } 
+
     // 0 should be returned, unless an exit syscall is executed
     return 0;
-}
-
-// PUT EXTRA FUNCTIONS HERE
-uint32_t extractNum(char num, uint32_t instruction) {
-    uint32_t result = 0;
-    if (num == 's') {
-        uint32_t s = 0x03E00000;
-        result = (s & instruction) >> 21;
-    } else if (num == 't') {
-        uint32_t t = 0x001F0000;
-        result = (t & instruction) >> 16;
-    } else if (num == 'd') {
-        uint32_t d = 0x0000F800;
-        result = (d & instruction) >> 11;
-    } else if (num == 'i') {
-        uint32_t i = 0x000007C0;
-        result = (i & instruction) >> 6;
-    } else if (num == 'b') {
-        uint32_t b = instruction & 0x0000FFFF;
-        result = is_negative(b);
-    } else if (num == 'x') {
-        result = instruction & 0x3FFFFFF;
-    }
-
-    return result;
 }

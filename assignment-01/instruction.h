@@ -1,13 +1,33 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  COMP1521 - Computer Systems Fundamentals                                  //
+//  Elicia AU DUONG - z5260173                                                //
+//  ---                                                                       //
+//  Assignment 1: emu, A MIPS Emulator (PART 1 & 2)                           //
+//  instruction.h                                                             //
+//                                                                            //
+//  declarations for functions to be used in instruction.c,                   //
+//  print_instruction.c and execute_instruction.c                             //
+//                                                                            //
+//  instructions sorted by opcode patterns                                    //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 #include <stdio.h>
 #include <stdint.h>
 
-uint32_t is_negative(uint32_t num);
-uint32_t l_negative(char l, uint32_t num);
+// Extract registers / numbers from a given instruction
+uint32_t extractNum(char num, uint32_t instruction);
+
+// Check if a number is negative and convert to negative
+int32_t is_negative(uint32_t num);
+
+// Check if a number is negative and convert to negative
+// Specifically for load instructions
+int32_t l_negative(char l, uint32_t num);
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 1: 
-//  
+//              Code Pattern 1: 111111xxxxxxxxxxxxxxx11111111111              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute add instruction
@@ -66,9 +86,7 @@ void jrInstr(uint32_t s, uint32_t *program_counter);
 void syscallInstr(uint32_t *program_counter);
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 2: 
-//  
+//              Code Pattern 2: 111111xxxxxxxxxxxxxxxxxxxxxxxxxx              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute addi instruction
@@ -152,9 +170,7 @@ void jInstr(uint32_t X, uint32_t *program_counter);
 void jalInstr(uint32_t X, uint32_t *program_counter);
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 3: 
-//  
+//              Code Pattern 3: 11111111111xxxxxxxxxxxxxxx111111              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute sll instruction
@@ -168,9 +184,7 @@ void sllInstr(uint32_t d, uint32_t t, uint32_t I, uint32_t *program_counter);
 void srlInstr(uint32_t d, uint32_t t, uint32_t I, uint32_t *program_counter);
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 4: 
-//  
+//              Code Pattern 4: 111111xxxxx11111xxxxxxxxxxxxxxxx              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute blez instruction

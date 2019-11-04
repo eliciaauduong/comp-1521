@@ -1,3 +1,16 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//  COMP1521 - Computer Systems Fundamentals                                  //
+//  Elicia AU DUONG - z5260173                                                //
+//  ---                                                                       //
+//  Assignment 1: emu, A MIPS Emulator (PART 1 & 2)                           //
+//  instruction.c                                                             //
+//                                                                            //
+//  implementation of functions declared in instruction.h                     //
+//  instructions sorted by opcode patterns                                    //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -7,10 +20,36 @@
 #include "registers.h"
 #include "instruction.h"
 
-uint32_t is_negative(uint32_t num) {
+// Extract registers / numbers from a given instruction
+uint32_t extractNum(char num, uint32_t instruction) {
+    uint32_t result = 0;
+    if (num == 's') {
+        uint32_t s = 0x03E00000;
+        result = (s & instruction) >> 21;
+    } else if (num == 't') {
+        uint32_t t = 0x001F0000;
+        result = (t & instruction) >> 16;
+    } else if (num == 'd') {
+        uint32_t d = 0x0000F800;
+        result = (d & instruction) >> 11;
+    } else if (num == 'i') {
+        uint32_t i = 0x000007C0;
+        result = (i & instruction) >> 6;
+    } else if (num == 'b') {
+        uint32_t b = instruction & 0x0000FFFF;
+        result = is_negative(b);
+    } else if (num == 'x') {
+        result = instruction & 0x3FFFFFF;
+    }
+
+    return result;
+}
+
+// Check if a number is negative and convert to negative
+int32_t is_negative(uint32_t num) {
     uint32_t negative = num & 0x00008000;
     if (negative == 0x00008000) {
-        uint32_t neg = num ^ 0x0000ffff;
+        int32_t neg = num ^ 0x0000ffff;
         neg = neg + 1;
         neg = 0 - neg;
         return neg;
@@ -18,11 +57,13 @@ uint32_t is_negative(uint32_t num) {
     return num;
 }
 
-uint32_t l_negative(char l, uint32_t num) {
+// Check if a number is negative and convert to negative
+// Specifically for load instructions
+int32_t l_negative(char l, uint32_t num) {
     if (l == 'b') {
         uint32_t negative = num & 0x00000080;
         if (negative == 0x00000080) {
-            uint32_t neg = num ^ 0x000000ff;
+            int32_t neg = num ^ 0x000000ff;
             neg = neg + 1;
             neg = 0 - neg;
             return neg;
@@ -30,7 +71,7 @@ uint32_t l_negative(char l, uint32_t num) {
     } else if (l == 'h') {
         uint32_t negative = num & 0x00008000;
         if (negative == 0x00008000) {
-            uint32_t neg = num ^ 0x0000ffff;
+            int32_t neg = num ^ 0x0000ffff;
             neg = neg + 1;
             neg = 0 - neg;
             return neg;
@@ -40,9 +81,7 @@ uint32_t l_negative(char l, uint32_t num) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 1: 
-//  
+//              Code Pattern 1: 111111xxxxxxxxxxxxxxx11111111111              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute add instruction
@@ -211,9 +250,7 @@ void syscallInstr(uint32_t *program_counter) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 2: 
-//  
+//              Code Pattern 2: 111111xxxxxxxxxxxxxxxxxxxxxxxxxx              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute addi instruction
@@ -425,9 +462,7 @@ void jalInstr(uint32_t X, uint32_t *program_counter) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 3: 
-//  
+//              Code Pattern 3: 11111111111xxxxxxxxxxxxxxx111111              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute sll instruction
@@ -453,9 +488,7 @@ void srlInstr(uint32_t d, uint32_t t, uint32_t I, uint32_t *program_counter) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-//  Code Pattern 4: 
-//  
+//              Code Pattern 4: 111111xxxxx11111xxxxxxxxxxxxxxxx              //
 ////////////////////////////////////////////////////////////////////////////////
 
 // Execute blez instruction
