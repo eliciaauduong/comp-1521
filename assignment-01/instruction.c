@@ -14,9 +14,8 @@ uint32_t is_negative(uint32_t num) {
         neg = neg + 1;
         neg = 0 - neg;
         return neg;
-    } else {
-        return num;
     }
+    return num;
 }
 
 uint32_t l_negative(char l, uint32_t num) {
@@ -27,9 +26,7 @@ uint32_t l_negative(char l, uint32_t num) {
             neg = neg + 1;
             neg = 0 - neg;
             return neg;
-        } else {
-            return num;
-        }
+        } 
     } else if (l == 'h') {
         uint32_t negative = num & 0x00008000;
         if (negative == 0x00008000) {
@@ -37,10 +34,9 @@ uint32_t l_negative(char l, uint32_t num) {
             neg = neg + 1;
             neg = 0 - neg;
             return neg;
-        } else {
-            return num;
-        }
+        } 
     }
+    return num;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -316,12 +312,29 @@ void lhInstr(uint32_t t, uint32_t O, uint32_t b, uint32_t *program_counter) {
 // t = *(int32*)(b + O) 
 void lwInstr(uint32_t t, uint32_t O, uint32_t b, uint32_t *program_counter) {
     uint32_t x = get_register(b);
-    uint32_t result = x + O;
-    
-    uint32_t byte1 = get_byte(result);
-    uint32_t byte2 = (get_byte(result + 1) << 8);
-    uint32_t byte3 = (get_byte(result + 2) << 16);
-    uint32_t byte4 = (get_byte(result + 3) << 24);
+    uint32_t byte1, byte2, byte3, byte4 = 0;
+    uint32_t result1 = x + O;
+    uint32_t result2 = get_byte(x) + O;
+    if (get_byte(result1) >= 0xff) {
+        byte1 = (result2);
+    } else {
+        byte1 = (get_byte(result1));
+    }
+    if (get_byte(result1 + 1) >= 0xff) {
+        byte2 = (result2 + 1) << 8;
+    } else {
+        byte2 = (get_byte(result1 + 1) << 8);
+    }
+    if (get_byte(result1 + 2) >= 0xff) {
+        byte3 = (result2 + 2) << 16;
+    } else {
+        byte3 = (get_byte(result1 + 2) << 16);
+    }
+    if (get_byte(result1 + 3) >= 0xff) {
+        byte4 = (result2 + 3) << 24;
+    } else {
+        byte4 = (get_byte(result1 + 3) << 24);
+    }
     uint32_t val = byte1 + byte2 + byte3 + byte4;
     set_register(t, val);
 
