@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+uint32_t is_negative(uint32_t num);
+uint32_t l_negative(char l, uint32_t num);
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Code Pattern 1: 

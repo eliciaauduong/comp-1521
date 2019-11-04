@@ -7,6 +7,42 @@
 #include "registers.h"
 #include "instruction.h"
 
+uint32_t is_negative(uint32_t num) {
+    uint32_t negative = num & 0x00008000;
+    if (negative == 0x00008000) {
+        uint32_t neg = num ^ 0x0000ffff;
+        neg = neg + 1;
+        neg = 0 - neg;
+        return neg;
+    } else {
+        return num;
+    }
+}
+
+uint32_t l_negative(char l, uint32_t num) {
+    if (l == 'b') {
+        uint32_t negative = num & 0x00000080;
+        if (negative == 0x00000080) {
+            uint32_t neg = num ^ 0x000000ff;
+            neg = neg + 1;
+            neg = 0 - neg;
+            return neg;
+        } else {
+            return num;
+        }
+    } else if (l == 'h') {
+        uint32_t negative = num & 0x00008000;
+        if (negative == 0x00008000) {
+            uint32_t neg = num ^ 0x0000ffff;
+            neg = neg + 1;
+            neg = 0 - neg;
+            return neg;
+        } else {
+            return num;
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Code Pattern 1: 
@@ -134,29 +170,30 @@ void jrInstr(uint32_t s, uint32_t *program_counter) {
 void syscallInstr(uint32_t *program_counter) {
     uint32_t reg = get_register(v0);
     uint32_t arg = get_register(a0);
-    
-    if (reg == 1) {                         // print integer
+    if (reg == 1) {                                     // print integer
         printf("%d", arg);
-    } else if (reg == 4) {                  // print string
-        char c = get_byte(arg);
+    } else if (reg == 4) {                              // print string
+        arg = get_register(a0);
         int i = 0;
-        while (c != '\0') {
+        int c = get_byte(arg + i);
+        while(c != '\0') {
             printf("%c", c);
             i++;
             c = get_byte(arg + i);
         }
-    } else if (reg == 5) {                  // read integer
+    } else if (reg == 5) {                              // read integer
         uint32_t num = 0;
         scanf("%d", &num);
         set_register(v0, num);
-    } else if (reg == 8) {                  // read string
+        printf("%d", get_register(v0));
+    } else if (reg == 8) {                              // read string
         char *str = NULL;
         uint32_t size = get_register(a1);
         int i = 0;
         int zeroFill = 0;
         scanf("%s", str);
         while (i < size) {
-            if (str[i] == '\n' || zeroFill == 1) {
+            if (str[i-1] == '\n' || zeroFill == 1) {
                 set_byte(arg+i,0);
                 zeroFill = 1;
             } else {
@@ -164,11 +201,11 @@ void syscallInstr(uint32_t *program_counter) {
             }
             i++;
         }
-    } else if (reg == 10) {                 // exit
+    } else if (reg == 10) {                             // exit
         exit(0);
-    } else if (reg == 11) {                 // print character
+    } else if (reg == 11) {                             // print character
         printf("%c", arg);
-    } else if (reg == 12) {                 // read character
+    } else if (reg == 12) {                             // read character
         char c = 0;
         scanf("%c", &c);
         set_register(v0, (uint32_t)c);
@@ -254,6 +291,7 @@ void luiInstr(uint32_t t, uint32_t I, uint32_t *program_counter) {
 void lbInstr(uint32_t t, uint32_t O, uint32_t b, uint32_t *program_counter) {
     uint32_t x = get_register(b);
     uint32_t val = get_byte(x + O);
+    val = l_negative('b', val);
     set_register(t, val);
 
     (*program_counter) += 4;
@@ -267,6 +305,7 @@ void lhInstr(uint32_t t, uint32_t O, uint32_t b, uint32_t *program_counter) {
     uint32_t byte1 = get_byte(x + O);
     uint32_t byte2 = (get_byte(x + O + 1) << 8);
     uint32_t val = byte1 + byte2;
+    val = l_negative('h', val);
     set_register(t, val);
 
     (*program_counter) += 4;
@@ -277,10 +316,12 @@ void lhInstr(uint32_t t, uint32_t O, uint32_t b, uint32_t *program_counter) {
 // t = *(int32*)(b + O) 
 void lwInstr(uint32_t t, uint32_t O, uint32_t b, uint32_t *program_counter) {
     uint32_t x = get_register(b);
-    uint32_t byte1 = get_byte(x + O);
-    uint32_t byte2 = (get_byte(x + O + 1) << 8);
-    uint32_t byte3 = (get_byte(x + O + 2) << 16);
-    uint32_t byte4 = (get_byte(x + O + 3) << 24);
+    uint32_t result = x + O;
+    
+    uint32_t byte1 = get_byte(result);
+    uint32_t byte2 = (get_byte(result + 1) << 8);
+    uint32_t byte3 = (get_byte(result + 2) << 16);
+    uint32_t byte4 = (get_byte(result + 3) << 24);
     uint32_t val = byte1 + byte2 + byte3 + byte4;
     set_register(t, val);
 

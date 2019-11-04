@@ -23,8 +23,6 @@ uint32_t extractNum(char num, uint32_t instruction);
  *
  * returns 1 if an exit syscall is executed, 0 otherwise
  */
-uint32_t is_negative(uint32_t num);
-
 
 int execute_instruction(uint32_t instruction, uint32_t *program_counter) {
     // get the opcodes to differentiate each instruction
@@ -67,6 +65,9 @@ int execute_instruction(uint32_t instruction, uint32_t *program_counter) {
         jrInstr(s, program_counter);                     // jr instruction
     } else if (code == 0x0000000C) {
         syscallInstr(program_counter);                   // syscall instruction
+        if (get_register(v0) == 10) {
+            return 1;
+        }
     }  
     
     if (code1 == 0x20000000) {
@@ -146,16 +147,3 @@ uint32_t extractNum(char num, uint32_t instruction) {
 
     return result;
 }
-
-/*
-uint32_t is_negative(uint32_t num) {
-    uint32_t negative = num & 0x00008000;
-    if (negative == 0x00008000) {
-        uint32_t neg = num ^ 0x0000ffff;
-        neg = neg + 1;
-        neg = 0 - neg;
-        return neg;
-    } else {
-        return num;
-    }
-}*/
