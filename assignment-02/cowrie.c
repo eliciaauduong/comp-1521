@@ -111,10 +111,32 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
 
-    // ADD CODE HERE TO IMPLEMENT SUBSET 0
+    ////////////////////////////////////////////////////////////////////////////
+    //                                SUBSET 0                                //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    if (strcmp(program, "cd") == 0) {
+        char *newPath = words[1];
+        char *home = getenv("HOME");
+        if (newPath == NULL) {
+            newPath = home;
+        }
+        if (chdir(newPath) != 0) {
+            fprintf(stderr, "cd: %s: No such file or directory\n", newPath);
+            return;
+        }
+    }
+    
+    if (strcmp(program, "pwd") == 0) {
+        char pathname[1000];
+        if (getcwd(pathname, sizeof pathname) == NULL) {
+            perror("getcwd");
+            return;
+        }
+        printf("current directory is '%s'\n", pathname);
+    }
 
     // CHANGE CODE BELOW HERE TO IMPLEMENT SUBSET 1
-
     if (strrchr(program, '/') == NULL) {
         fprintf(stderr, "SEARCHING OF PATH FOR PROGRAM UNIMPLEMENTED\n");
     }
