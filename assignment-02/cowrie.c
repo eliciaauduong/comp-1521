@@ -16,7 +16,7 @@
 
 
 // PUT EXTRA `#include'S HERE
-
+#include "subset2.h"
 
 #define MAX_LINE_CHARS 1024
 #define INTERACTIVE_PROMPT "cowrie> "
@@ -29,7 +29,7 @@
 
 
 // PUT EXTRA `#define'S HERE
-
+#define MAX_PATH 100000
 
 static void execute_command(char **words, char **path, char **environment);
 static void do_exit(char **words);
@@ -115,6 +115,8 @@ static void execute_command(char **words, char **path, char **environment) {
     //                                SUBSET 0                                //
     ////////////////////////////////////////////////////////////////////////////
     
+    // cd (change directory)
+    // if no argument is given, change to HOME environment
     if (strcmp(program, "cd") == 0) {
         char *newPath = words[1];
         char *home = getenv("HOME");
@@ -125,28 +127,50 @@ static void execute_command(char **words, char **path, char **environment) {
             fprintf(stderr, "cd: %s: No such file or directory\n", newPath);
             return;
         }
+        return;
     }
     
+    // pwd (print current directory)
     if (strcmp(program, "pwd") == 0) {
-        char pathname[1000];
+        // code from COMP1521 - getcwd.c
+        char pathname[MAX_PATH];
         if (getcwd(pathname, sizeof pathname) == NULL) {
             perror("getcwd");
             return;
         }
         printf("current directory is '%s'\n", pathname);
+        return;
     }
 
-    // CHANGE CODE BELOW HERE TO IMPLEMENT SUBSET 1
+    ////////////////////////////////////////////////////////////////////////////
+    //                                SUBSET 1                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    // search for command in path directories
     if (strrchr(program, '/') == NULL) {
-        fprintf(stderr, "SEARCHING OF PATH FOR PROGRAM UNIMPLEMENTED\n");
+        int i = 0;
+        int exe = 0;
+        while (path[i] != NULL) {
+            int len = strlen(path[i]) + strlen(program) + 2;
+            char exeProgram[len];
+            snprintf(exeProgram, len, "%s/%s", path[i], program);
+            exe = is_executable(exeProgram);
+            
+            if (exe == 1) {
+                fprintf(stderr, "RUNNING PROGRAM UNIMPLEMENTED\n");
+                // posix_spawn
+                break;
+            }
+            ++i;
+        }
+        if (exe == 0) {
+            fprintf(stderr, "%s: command not found\n", program);
+        }
+    } else { // directly run the program
+        printf("direct\n");
+        // posix_spawn
     }
 
-
-    if (is_executable(program)) {
-        fprintf(stderr, "RUNNING PROGRAM UNIMPLEMENTED\n");
-    } else {
-        fprintf(stderr, "CHANGE ME TO AN ERROR MESSAGE\n");
-    }
 }
 
 
