@@ -16,6 +16,7 @@
 
 
 // PUT EXTRA `#include'S HERE
+#include <spawn.h>
 #include "subset2.h"
 
 #define MAX_LINE_CHARS 1024
@@ -157,25 +158,49 @@ static void execute_command(char **words, char **path, char **environment) {
             exe = is_executable(exeProgram);
             
             if (exe == 1) {
-                fprintf(stderr, "RUNNING PROGRAM UNIMPLEMENTED\n");
                 // posix_spawn
+                runPosix(exeProgram, words, environment);
                 break;
             }
             ++i;
         }
         if (exe == 0) {
             fprintf(stderr, "%s: command not found\n", program);
+            return;
         }
     } else { // directly run the program
-        printf("direct\n");
         // posix_spawn
+        int exe = is_executable(program);
+        if (exe == 1) {
+            runPosix(program, words, environment);
+        } else {
+            fprintf(stderr, "%s: command not found\n", program);
+            return;
+        }
+        return;
     }
+    appendHistory(words);
 
 }
 
 
 // PUT EXTRA FUNCTIONS HERE
-
+static void runPosix(char *prog, char **words, char **env) {
+    pid_t pid;
+    
+    if (posix_spawn(&pid, prog, NULL, NULL, words, env) != 0) {
+        perror("spawn");
+        return;
+    }
+    
+    int exitStatus;
+    if (waitpid(pid, &exitStatus, 0) == -1) {
+        perror("waitpid");
+        return;
+    }
+    printf("%s exit status = %d\n", prog, WEXITSTATUS(exitStatus));
+    return;
+}
 
 //
 // Implement the `exit' shell built-in, which exits the shell.
