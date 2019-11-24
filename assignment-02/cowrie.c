@@ -113,6 +113,21 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
 
+    // from COMP1521 - week 09 lab
+    // get HOME value
+    char *homeEnv = getenv("HOME");
+    if (homeEnv == NULL) {
+        perror("HOME");
+        return;
+    }
+    
+    // set value of /.diary
+    char *hist = ".cowrie_history";
+    
+    // construct complete pathname $HOME/.cowrie_history
+    int pnLen = strlen(homeEnv) + strlen(hist) + 2;
+    char pn[pnLen];
+    snprintf(pn, pnLen, "%s/%s", homeEnv, hist);
     ////////////////////////////////////////////////////////////////////////////
     //                                SUBSET 0                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -165,10 +180,10 @@ static void execute_command(char **words, char **path, char **environment) {
         } else {
             num = 10;
         }
-        history(num);
+        history(num, pn);
         return;
     }
-
+    
     ////////////////////////////////////////////////////////////////////////////
     //                                SUBSET 1                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -206,10 +221,7 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
     
-    
-    
-    appendHistory(words);
-    
+    appendHistory(words, pn);
 }
 
 
