@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "cowrie.h"
 #include "subset2.h"
 
 #define MAX_LINE_CHARS 1024
@@ -18,6 +23,22 @@ void appendHistory(char **command, char *pathname) {
     // close file
     fclose(f);
 }
+
+// count the number of lines in $HOME/.cowrie_history
+int lineCount(char *pathname) {
+    // open file to read
+    FILE *f = fopen(pathname, "r");
+    
+    int line = 0;
+    char comm[MAX_LINE_CHARS];
+    while (fgets(comm, MAX_LINE_CHARS, f) != NULL) {
+        line++;
+    }
+    
+    line--;
+    return line;    
+}
+
 // add a built-in command history n which prints the last n commands
 // if n is not specified it should default to 10
 void history(int last, char *pathname) {
@@ -28,25 +49,30 @@ void history(int last, char *pathname) {
     
     char comm[MAX_LINE_CHARS];
     while (fgets(comm, MAX_LINE_CHARS, f) != NULL && i < size) {
-        if (i >= (size - last)) {
+        if (i >= (size - last) && i < size) {
             printf("%d: %s", i, comm);
         }
         i++;
     }
     
     fclose(f);
+    return;
 }
 
-// count the number of lines in $HOME/.cowrie_history
-static int lineCount(char *pathname) {
-    // open file to read
+void printExe(int command, char *pathname, char **path, char **environ) {
+    
     FILE *f = fopen(pathname, "r");
-    
-    int line = 0;
+    int size = lineCount(pathname);
     char comm[MAX_LINE_CHARS];
-    while (fgets(comm, MAX_LINE_CHARS, f) != NULL) {
-        line++;
+    int i = 0;
+    while (fgets(comm, MAX_LINE_CHARS, f) != NULL && i <= size) {
+        if (i == command) {
+            printf("%s", comm);
+            char **args = tokenize(comm, WORD_SEPARATORS, SPECIAL_CHARS);
+            execute_command(args, path, environ);
+            free_tokens(args);
+        }
+        i++;
     }
-    
-    return line;    
+    return;
 }

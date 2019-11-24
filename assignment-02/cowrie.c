@@ -14,31 +14,10 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-
 // PUT EXTRA `#include'S HERE
 #include <spawn.h>
+#include "cowrie.h"
 #include "subset2.h"
-
-
-#define MAX_LINE_CHARS 1024
-#define INTERACTIVE_PROMPT "cowrie> "
-#define DEFAULT_PATH "/bin:/usr/bin"
-#define WORD_SEPARATORS " \t\r\n"
-#define DEFAULT_HISTORY_SHOWN 10
-
-// These characters are always returned as single words
-#define SPECIAL_CHARS "!><|"
-
-
-// PUT EXTRA `#define'S HERE
-#define MAX_PATH 10000
-
-static void execute_command(char **words, char **path, char **environment);
-static void do_exit(char **words);
-static int is_executable(char *pathname);
-static char **tokenize(char *s, char *separators, char *special_chars);
-static void free_tokens(char **tokens);
-
 
 // PUT EXTRA FUNCTION PROTOTYPES HERE
 static void runPosix(char *path, char **words, char **env);
@@ -95,7 +74,7 @@ int main(void) {
 //  * `path': a NULL-terminated array of directories to search in;
 //  * `environment': a NULL-terminated array of environment variables.
 //
-static void execute_command(char **words, char **path, char **environment) {
+void execute_command(char **words, char **path, char **environment) {
     assert(words != NULL);
     assert(path != NULL);
     assert(environment != NULL);
@@ -113,6 +92,7 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
 
+
     // from COMP1521 - week 09 lab
     // get HOME value
     char *homeEnv = getenv("HOME");
@@ -121,13 +101,18 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
     
-    // set value of /.diary
+    // set value of /.cowrie_history
     char *hist = ".cowrie_history";
     
     // construct complete pathname $HOME/.cowrie_history
     int pnLen = strlen(homeEnv) + strlen(hist) + 2;
     char pn[pnLen];
     snprintf(pn, pnLen, "%s/%s", homeEnv, hist);
+    
+    if (strcmp(program, "!") != 0) {
+        appendHistory(words, pn);
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     //                                SUBSET 0                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -170,11 +155,11 @@ static void execute_command(char **words, char **path, char **environment) {
             char *endptr;
             num = (int)strtol(words[1], &endptr, 10);
             if (*endptr != '\0') {
-                fprintf(stderr, "history: nonnumber: numeric argument required\n");
+                fprintf(stderr, "%s: nonnumber: numeric argument required\n", program);
                 return;
             }
             if (words[2] != NULL) {
-                fprintf(stderr, "history: too many arguments\n");
+                fprintf(stderr, "%s: too many arguments\n", program);
                 return;
             }
         } else {
@@ -184,6 +169,28 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
     
+    if (strcmp(program, "!") == 0) {
+        int line = 0;
+        
+        if (words[1] != NULL) {
+            char *ptr;
+            line = (int)strtol(words[1], &ptr, 10);
+            if (*ptr != '\0') {
+                fprintf(stderr, "!: %s: numeric argument required\n", words[1]);
+                return;
+            }
+            if (words[2] != NULL) {
+                fprintf(stderr, "!: too many arguments\n");
+                return;
+            }
+        } else {
+            line = lineCount(pn);
+        }
+        
+        printExe(line, pn, path, environment);
+        return;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     //                                SUBSET 1                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -220,13 +227,11 @@ static void execute_command(char **words, char **path, char **environment) {
         }
         return;
     }
-    
-    appendHistory(words, pn);
 }
 
 
 // PUT EXTRA FUNCTIONS HERE
-static void runPosix(char *prog, char **words, char **env) {
+void runPosix(char *prog, char **words, char **env) {
     pid_t pid;
     
     if (posix_spawn(&pid, prog, NULL, NULL, words, env) != 0) {
@@ -251,7 +256,7 @@ static void runPosix(char *prog, char **words, char **env) {
 //     % exit
 //     % exit 1
 //
-static void do_exit(char **words) {
+void do_exit(char **words) {
     int exit_status = 0;
 
     if (words[1] != NULL) {
@@ -276,7 +281,7 @@ static void do_exit(char **words) {
 // Use this function when searching through the directories
 // in the path for an executable file
 //
-static int is_executable(char *pathname) {
+int is_executable(char *pathname) {
     struct stat s;
     return
         // does the file exist?
@@ -295,7 +300,7 @@ static int is_executable(char *pathname) {
 // The array itself, and the strings, are allocated with `malloc(3)';
 // the provided `free_token' function can deallocate this.
 //
-static char **tokenize(char *s, char *separators, char *special_chars) {
+char **tokenize(char *s, char *separators, char *special_chars) {
     size_t n_tokens = 0;
     // malloc array guaranteed to be big enough
     char **tokens = malloc((strlen(s) + 1) * sizeof *tokens);
@@ -343,7 +348,7 @@ static char **tokenize(char *s, char *separators, char *special_chars) {
 //
 // Free an array of strings as returned by `tokenize'.
 //
-static void free_tokens(char **tokens) {
+void free_tokens(char **tokens) {
     for (int i = 0; tokens[i] != NULL; i++) {
         free(tokens[i]);
     }
