@@ -19,6 +19,7 @@
 #include <spawn.h>
 #include "subset2.h"
 
+
 #define MAX_LINE_CHARS 1024
 #define INTERACTIVE_PROMPT "cowrie> "
 #define DEFAULT_PATH "/bin:/usr/bin"
@@ -30,7 +31,7 @@
 
 
 // PUT EXTRA `#define'S HERE
-#define MAX_PATH 100000
+#define MAX_PATH 10000
 
 static void execute_command(char **words, char **path, char **environment);
 static void do_exit(char **words);
@@ -40,7 +41,7 @@ static void free_tokens(char **tokens);
 
 
 // PUT EXTRA FUNCTION PROTOTYPES HERE
-
+static void runPosix(char *path, char **words, char **env);
 
 int main(void) {
     //ensure stdout is line-buffered during autotesting
@@ -143,6 +144,31 @@ static void execute_command(char **words, char **path, char **environment) {
         return;
     }
 
+
+    ////////////////////////////////////////////////////////////////////////////
+    //                                SUBSET 2                                //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    if (strcmp(program, "history") == 0) {
+        int num = 0;
+        if (words[1] != NULL) {
+            char *endptr;
+            num = (int)strtol(words[1], &endptr, 10);
+            if (*endptr != '\0') {
+                fprintf(stderr, "history: nonnumber: numeric argument required\n");
+                return;
+            }
+            if (words[2] != NULL) {
+                fprintf(stderr, "history: too many arguments\n");
+                return;
+            }
+        } else {
+            num = 10;
+        }
+        history(num);
+        return;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     //                                SUBSET 1                                //
     ////////////////////////////////////////////////////////////////////////////
@@ -179,8 +205,11 @@ static void execute_command(char **words, char **path, char **environment) {
         }
         return;
     }
+    
+    
+    
     appendHistory(words);
-
+    
 }
 
 
